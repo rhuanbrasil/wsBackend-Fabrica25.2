@@ -1,7 +1,7 @@
-from django.rest_framework import ModelViewSet
-from estante_virtual.core.models import Resenha
-from estante_virtual.core.serializers.resenhaSerializer import ResenhaSerializer
+from rest_framework import viewsets
+from ..models import Resenha
+from ..serializers.resenhaSerializer import ResenhaSerializer
 
-class ResenhaViewSet(ModelViewSet):
+class ResenhaViewSet(viewsets.ModelViewSet):
     queryset = Resenha.objects.all()
     serializer_class = ResenhaSerializer
