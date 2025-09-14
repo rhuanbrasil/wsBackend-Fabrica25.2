@@ -9,8 +9,7 @@ class Livro(models.Model):
     
 
     def __str__(self):
-        return self.título, self.autor, self.google_books_id, self.url_capa, self.ano_publicacao
-    
+        return f"Titulo: '{self.título}' - Autor: {self.autor} - Ano: {self.ano_publicacao}"    
 class Resenha(models.Model):
     livro = models.ForeignKey(Livro, on_delete=models.CASCADE, related_name='resenhas')
     comentario = models.TextField()
@@ -18,4 +17,4 @@ class Resenha(models.Model):
     data_criacao = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
-        return self.comentario, self.nota, self.livro, self.data_criacao
+        return f"Resenha para '{self.livro.título}' - Nota: {self.nota}"
