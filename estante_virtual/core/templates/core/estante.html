@@ -1,0 +1,48 @@
+{% extends 'core/base.html' %}
+
+{% block content %}
+<h2>Minha Estante</h2>
+
+<div id="minha-estante" class="livro-grid">
+    </div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', carregarEstante);
+
+    async function carregarEstante() {
+        const estanteDiv = document.getElementById('minha-estante');
+        estanteDiv.innerHTML = '<p>Carregando sua estante...</p>';
+
+        try {
+            const response = await fetch('/api/livros/');
+            const livros = await response.json();
+
+            estanteDiv.innerHTML = '';
+            if (livros.length === 0) {
+                estanteDiv.innerHTML = '<p>Sua estante está vazia. Adicione livros a partir da página de busca!</p>';
+            }
+
+            livros.forEach(livro => {
+                const livroCard = document.createElement('div');
+                livroCard.className = 'livro-card';
+
+                const imagem = livro.url_capa ? `<img src="${livro.url_capa}" alt="Capa de ${livro.título}">` : '<div style="height: 250px; display: flex; align-items: center; justify-content: center; background: #eee;"><p>Sem capa</p></div>';
+
+                livroCard.innerHTML = `
+                    <a href="/livros/${livro.id}/">
+                        ${imagem}
+                        <div class="livro-card-content">
+                            <h3>${livro.título}</h3>
+                            <p>${livro.autor}</p>
+                        </div>
+                    </a>
+                `;
+                estanteDiv.appendChild(livroCard);
+            });
+        } catch (error) {
+            estanteDiv.innerHTML = '<p>Ocorreu um erro ao carregar sua estante.</p>';
+            console.error('Erro:', error);
+        }
+    }
+</script>
+{% endblock %}

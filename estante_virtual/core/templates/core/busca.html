@@ -1,0 +1,103 @@
+{% extends 'core/base.html' %}
+
+{% block content %}
+<h2>Buscar Novos Livros</h2>
+<div class="form-container">
+    <input type="text" id="termo-busca" placeholder="Digite o título do livro...">
+    <button onclick="buscarLivros()">Buscar</button>
+</div>
+
+<div id="resultados-busca" class="livro-grid">
+    </div>
+
+<script>
+    async function buscarLivros() {
+        const termo = document.getElementById('termo-busca').value;
+        const resultadosDiv = document.getElementById('resultados-busca');
+        resultadosDiv.innerHTML = '<p>Buscando...</p>';
+
+        if (!termo) {
+            resultadosDiv.innerHTML = '<p>Por favor, digite um termo para buscar.</p>';
+            return;
+        }
+
+        try {
+            const response = await fetch(`/api/buscar-livros/?titulo=${termo}`);
+            if (!response.ok) throw new Error('Erro na rede ou na API.');
+            const livros = await response.json();
+
+            resultadosDiv.innerHTML = '';
+            if (livros.length === 0) {
+                resultadosDiv.innerHTML = '<p>Nenhum livro encontrado.</p>';
+            }
+
+            livros.forEach(livro => {
+                const livroCard = document.createElement('div');
+                livroCard.className = 'livro-card';
+                
+                const imagem = livro.url_capa ? `<img src="${livro.url_capa}" alt="Capa de ${livro.titulo}">` : '<div style="height: 250px; display: flex; align-items: center; justify-content: center; background: #eee;"><p>Sem capa</p></div>';
+
+                livroCard.innerHTML = `
+                    ${imagem}
+                    <div class="livro-card-content">
+                        <h3>${livro.titulo}</h3>
+                        <p>${livro.autores}</p>
+                    </div>
+                    <button class="btn-success" style="margin: 1rem; margin-top: auto;" 
+                            onclick="adicionarLivro(\`${livro.titulo.replace(/'/g, "\\'")}\`, \`${livro.autores.replace(/'/g, "\\'")}\`, \`${livro.google_books_id}\`, \`${livro.url_capa || ''}\`)">
+                        Adicionar à Estante
+                    </button>
+                `;
+                resultadosDiv.appendChild(livroCard);
+            });
+        } catch (error) {
+            resultadosDiv.innerHTML = `<p>Ocorreu um erro ao buscar: ${error.message}</p>`;
+        }
+    }
+
+    async function adicionarLivro(titulo, autor, google_books_id, url_capa) {
+        const dadosLivro = {
+            título: titulo,
+            autor: autor,
+            google_books_id: google_books_id,
+            url_capa: url_capa,
+            ano_publicacao: new Date().getFullYear()
+        };
+        try {
+            const response = await fetch('/api/livros/', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json','X-CSRFToken': getCookie('csrftoken')},
+                body: JSON.stringify(dadosLivro)
+            });
+            if (response.status === 201) {
+                alert(`'${titulo}' foi adicionado à sua estante!`);
+            } else {
+                const errorData = await response.json();
+                if(errorData.google_books_id){
+                    alert('Este livro já está na sua estante.');
+                } else {
+                    alert('Ocorreu um erro ao adicionar o livro.');
+                }
+            }
+        } catch (error) {
+            console.error('Erro ao adicionar livro:', error);
+            alert('Erro de conexão ao adicionar o livro.');
+        }
+    }
+
+    function getCookie(name) {
+        let cookieValue = null;
+        if (document.cookie && document.cookie !== '') {
+            const cookies = document.cookie.split(';');
+            for (let i = 0; i < cookies.length; i++) {
+                const cookie = cookies[i].trim();
+                if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                    cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                    break;
+                }
+            }
+        }
+        return cookieValue;
+    }
+</script>
+{% endblock %}
