@@ -1,5 +1,5 @@
-from django.rest_framework import serializers
-from estante_virtual.core.models import Resenha
+from rest_framework import serializers
+from ..models import Resenha
 
 class ResenhaSerializer(serializers.ModelSerializer):
     class Meta:

@@ -1,5 +1,5 @@
-from django.rest_framework import serializers
-from estante_virtual.core.models import Livro
+from rest_framework import serializers
+from ..models import Livro
 
 class LivroSerializer(serializers.ModelSerializer):
     class Meta:
